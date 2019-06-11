@@ -14,4 +14,3 @@ libraryDependencies += "com.typesafe.akka" %% "akka-stream" % "2.5.22"
 
 libraryDependencies += "mysql" % "mysql-connector-java" % "8.0.16"
 libraryDependencies += "com.typesafe.play" %% "play-json" % "2.5.15"
-libraryDependencies += "com.typesafe.akka" %% "akka-http-spray-json" % "10.1.8"
