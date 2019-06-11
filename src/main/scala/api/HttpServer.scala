@@ -82,7 +82,7 @@ class HttpServer() {
 
       println("DB-Access successful")
     } catch {
-      case e: Throwable => e.printStackTrace
+      case e: Throwable => e.printStackTrace()
     }
   }
 
@@ -111,9 +111,9 @@ class HttpServer() {
     val Email = resultSet.getString("Email")
     val Password = resultSet.getString("Password")
 
-    val user = new User(Username, Firstname, Surname, Birthplace, Birthdate, Email, Password)
+    val user = User(Username, Firstname, Surname, Birthplace, Birthdate, Email, Password)
 
-    return user
+    user
   }
 
   def processInputLine(input: String): Unit = {
@@ -135,14 +135,14 @@ class HttpServer() {
   def processInputLineJson(input: String): Unit = {
     println("processing Json input ...")
 
-    val myJson: JsValue = Json.parse(input);
+    val myJson: JsValue = Json.parse(input)
 
-    insertUser((myJson \\ "Username" )(0).as[String],
-      (myJson \\ "Firstname" )(0).as[String],
-      (myJson \\ "Surname" )(0).as[String],
-      (myJson \\ "Birthplace" )(0).as[String],
-      (myJson \\ "Birthdate" )(0).as[String],
-      (myJson \\ "Email" )(0).as[String],
-      (myJson \\ "Password" )(0).as[String])
+    insertUser((myJson \\ "Username").head.as[String],
+      (myJson \\ "Firstname").head.as[String],
+      (myJson \\ "Surname").head.as[String],
+      (myJson \\ "Birthplace").head.as[String],
+      (myJson \\ "Birthdate").head.as[String],
+      (myJson \\ "Email").head.as[String],
+      (myJson \\ "Password").head.as[String])
   }
 }
