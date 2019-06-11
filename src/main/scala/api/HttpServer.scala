@@ -1,6 +1,6 @@
 package api
 
-import java.sql.{Connection, DriverManager}
+import java.sql.{Connection, DriverManager, SQLException}
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
@@ -14,6 +14,8 @@ import model.User
 import scala.concurrent.{ExecutionContextExecutor, Future}
 
 class HttpServer() {
+
+  val debug = true
 
   implicit val system: ActorSystem = ActorSystem("my-system")
   implicit val materializer: ActorMaterializer = ActorMaterializer()
@@ -29,10 +31,18 @@ class HttpServer() {
         complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "<h1>Willkommen beim Jutiper Server</h1>"))
       } ~
         // simple query of a user to database
-        path("testJSON") {
-          // TODO: username variabel machen
-          val myJson = userToJson(getUserByUsername("Marc2"))
-          complete(HttpEntity(ContentTypes.`application/json`, myJson.toString()))
+        path("getUser"/ Segment) { command =>
+          {
+            val myJson: Option[User] = getUserByUsername(command)
+            myJson match {
+              case Some(user) => {
+                complete(HttpEntity(ContentTypes.`application/json`, userToJson(user).toString()))
+              }
+              case None => {
+                complete(HttpEntity(ContentTypes.`application/json`, errorToJson("Username does not exist").toString()))
+              }
+            }
+          }
         } ~
         // simple insertion of a user to database - maybe delete this!
         path("putUser" / Segment) { command => {processInputLine(command)}
@@ -48,6 +58,7 @@ class HttpServer() {
 
   def userToJson(user: User): JsObject = {
     val myJson = Json.obj(
+      "status" -> "success",
       "Username" -> user.Username,
       "Firstname" -> user.Firstname,
       "Surname" -> user.Surname,
@@ -56,6 +67,18 @@ class HttpServer() {
       "Email" -> user.Email,
       "Passwort" -> user.Password
     )
+
+    if (debug) {println("converted to json: "+ myJson)}
+    myJson
+  }
+
+  def errorToJson(message: String): JsObject = {
+    val myJson = Json.obj(
+      "status" -> "error",
+      "message" -> message
+    )
+
+    if (debug) {println("converted to json: "+ myJson)}
     myJson
   }
 
@@ -80,7 +103,7 @@ class HttpServer() {
 
       connection = DriverManager.getConnection(url + "?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=Europe/Berlin", username, password)
 
-      println("DB-Access successful")
+      if (debug) {println("DB-Access successful")}
     } catch {
       case e: Throwable => e.printStackTrace()
     }
@@ -96,28 +119,36 @@ class HttpServer() {
     val resultSet = statement.executeUpdate("INSERT INTO user (Username, Firstname, " +
       "Surname, Birthplace, Birthdate, Email, Password) VALUES " +
       "('" + Username + "', '" + Firstname + "', '" + Surname + "', '" + Birthplace + "', '" + Birthdate + "', '" + Email + "', '" + Password + "');")
-    println("DB-request successfully sent")
-
+    if (debug) println("DB-request successfully sent")
   }
 
-  def getUserByUsername(Username: String): User = {
-    val statement = connection.createStatement()
-    val resultSet = statement.executeQuery("SELECT * FROM jutiper.user WHERE Username = '" + Username + "';")
-    resultSet.first()
-    val Firstname = resultSet.getString("Firstname")
-    val Surname = resultSet.getString("Surname")
-    val Birthplace = resultSet.getString("Birthplace")
-    val Birthdate = resultSet.getString("Birthdate")
-    val Email = resultSet.getString("Email")
-    val Password = resultSet.getString("Password")
+  def getUserByUsername(Username: String): Option[User] = {
+    try {
+      val statement = connection.createStatement()
+      val resultSet = statement.executeQuery("SELECT * FROM jutiper.user WHERE Username = '" + Username + "';")
 
-    val user = User(Username, Firstname, Surname, Birthplace, Birthdate, Email, Password)
+      resultSet.first()
+      val Firstname = resultSet.getString("Firstname")
+      val Surname = resultSet.getString("Surname")
+      val Birthplace = resultSet.getString("Birthplace")
+      val Birthdate = resultSet.getString("Birthdate")
+      val Email = resultSet.getString("Email")
+      val Password = resultSet.getString("Password")
 
-    user
+      val user = User(Username, Firstname, Surname, Birthplace, Birthdate, Email, Password)
+
+
+      if (debug) {
+        println("returned user: " + user)
+      }
+      Some(user)
+    } catch {
+      case _: SQLException => None
+    }
   }
 
   def processInputLine(input: String): Unit = {
-    println("processing input ...")
+    if (debug) println("processing input ...")
     /*
     input.toList.filter(c => c != ' ').map(c => c.toString) match {
       case username :: firstname :: surname :: birthplace :: birthdate :: email :: password :: Nil => setUserNew(username, firstname, surname, birthplace, birthdate, email, password)
@@ -133,7 +164,7 @@ class HttpServer() {
   }
 
   def processInputLineJson(input: String): Unit = {
-    println("processing Json input ...")
+    if (debug) println("processing Json input ...")
 
     val myJson: JsValue = Json.parse(input)
 
