@@ -1,6 +1,8 @@
 package model
 
-package object mail {
+import scala.language.implicitConversions
+
+object Mail {
 
   implicit def stringToSeq(single: String): Seq[String] = Seq(single)
   implicit def liftToOption[T](t: T): Option[T] = Some(t)
@@ -18,7 +20,7 @@ package object mail {
                    subject: String,
                    message: String,
                    richMessage: Option[String] = None,
-                   attachment: Option[(java.io.File)] = None
+                   attachment: Option[java.io.File] = None
                  )
 
   object send {
@@ -53,7 +55,7 @@ package object mail {
       //TODO: Set up our email server hostname
       // gmail config
       commonsMail.setHostName("smtp.googlemail.com")
-      commonsMail.setAuthentication("shohrukhkoyirov@gmail.com","") //password
+      commonsMail.setAuthentication("jutiperdev@gmail.com","jutiperss19") //password
       commonsMail.setSSLOnConnect(true)
       commonsMail.setSmtpPort(465)
 
