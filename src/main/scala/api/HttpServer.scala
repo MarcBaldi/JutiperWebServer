@@ -44,13 +44,25 @@ class HttpServer() {
             }
           }
         } ~
+        // simple query of a user to database
+        path("login"/ Segment) { command =>
+        {
+          complete(HttpEntity(ContentTypes.`application/json`, login(command).toString()))
+        }
+        } ~
         // simple insertion of a user to database - maybe delete this!
         path("putUser" / Segment) { command => {processInputLine(command)}
           complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "<h1>Transmitted Successfully</h1>"))
         } ~
-        // simple insertion of a user to database
+        // simple insertion of a user to database aka a simple REGISTER
         path("putUserJson" / Segment) { command => {
           processInputLineJson(command)
+        }
+          complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "<h1>Transmitted Successfully</h1>"))
+        } ~
+        // simple insertion of an Erg to database
+        path("putErgJson" / Segment) { command => {
+          processInputLineErgJson(command)
         }
           complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "<h1>Transmitted Successfully</h1>"))
         }
@@ -113,13 +125,48 @@ class HttpServer() {
     connection.close()
   }
 
-  // maybe delete this
   def insertUser(Username: String, Firstname: String, Surname: String, Birthplace: String, Birthdate: String, Email: String, Password: String): Unit = {
     val statement = connection.createStatement()
-    val resultSet = statement.executeUpdate("INSERT INTO user (Username, Firstname, " +
+    statement.executeUpdate("INSERT INTO user (Username, Firstname, " +
       "Surname, Birthplace, Birthdate, Email, Password) VALUES " +
       "('" + Username + "', '" + Firstname + "', '" + Surname + "', '" + Birthplace + "', '" + Birthdate + "', '" + Email + "', '" + Password + "');")
-    if (debug) println("DB-request successfully sent")
+    if (debug) println("DB-request. successfully INSERTED")
+  }
+
+  // TODO: maybe make all var names english
+  def insertErg(UserName: String, VersuchNr: Int, KursName: String, AufgabeNr: Int, Erg: Int): Unit = {
+    val statement = connection.createStatement()
+    statement.executeUpdate("UPDATE " + KursName +
+      " SET q" + AufgabeNr +" = " + Erg +
+      "WHERE userFK = " + UserName + " AND versuchNr = " + VersuchNr + ";")
+    if (debug) println("DB-request. successfully UPDATED")
+  }
+
+  def insertVersuchNr(UserName: String){
+
+    val statement = connection.createStatement()
+    statement.executeUpdate("INSERT INTO 01_geschichte (userFK, versuchNr) " +
+      "VALUES " + "('" + UserName + "', 1);")
+    statement.executeUpdate("INSERT INTO 02_belichtung (userFK, versuchNr) " +
+      "VALUES " + "('" + UserName + "', 1);")
+    statement.executeUpdate("INSERT INTO 03_blende (userFK, versuchNr) " +
+      "VALUES " + "('" + UserName + "', 1);")
+    statement.executeUpdate("INSERT INTO 04_iso (userFK, versuchNr) " +
+      "VALUES " + "('" + UserName + "', 1);")
+    statement.executeUpdate("INSERT INTO 05_studiolicht (userFK, versuchNr) " +
+      "VALUES " + "('" + UserName + "', 1);")
+    statement.executeUpdate("INSERT INTO 06_blitz (userFK, versuchNr) " +
+      "VALUES " + "('" + UserName + "', 1);")
+    statement.executeUpdate("INSERT INTO 07_komposition (userFK, versuchNr) " +
+      "VALUES " + "('" + UserName + "', 1);")
+    statement.executeUpdate("INSERT INTO 08_objektive (userFK, versuchNr) " +
+      "VALUES " + "('" + UserName + "', 1);")
+    statement.executeUpdate("INSERT INTO 09_perspektive (userFK, versuchNr) " +
+      "VALUES " + "('" + UserName + "', 1);")
+    statement.executeUpdate("INSERT INTO 10_portrait (userFK, versuchNr) " +
+      "VALUES " + "('" + UserName + "', 1);")
+    if (debug) println("DB-request. successfully MASS INSERTED")
+
   }
 
   def getUserByUsername(Username: String): Option[User] = {
@@ -144,6 +191,41 @@ class HttpServer() {
       Some(user)
     } catch {
       case _: SQLException => None
+    }
+  }
+
+  def login(input: String): JsObject = {
+
+
+    val myJson: JsValue = Json.parse(input)
+    val username = (myJson \\ "Username").head.as[String]
+    val password = (myJson \\ "Password").head.as[String]
+
+    if (debug) {println(username + " tries to login")}
+
+    try {
+      val statement = connection.createStatement()
+      val resultSet = statement.executeQuery("SELECT * FROM jutiper.user WHERE Username = '" + username + "' AND Password = '" + password + "';")
+      resultSet.first()
+      if (debug) {println("DEBUG: "+ password)}
+      if (debug) {println("DEBUG: "+ input)}
+      //if (debug) {println("DEBUG: "+ resultSet.)}
+
+      if (resultSet.getString("Username")== username ){
+        if (debug) {println("it was successful")}
+        Json.obj(
+          "status" -> "true"
+        )
+      }else{
+        if (debug) {println("it was not successful")}
+        Json.obj(
+          "status" -> "false"
+        )
+      }
+    } catch {
+      case _: SQLException => Json.obj(
+        "status" -> "false"
+      )
     }
   }
 
@@ -175,5 +257,34 @@ class HttpServer() {
       (myJson \\ "Birthdate").head.as[String],
       (myJson \\ "Email").head.as[String],
       (myJson \\ "Password").head.as[String])
+
+    // insert first versuchNr on each course
+    insertVersuchNr((myJson \\ "Username").head.as[String])
+  }
+
+  def processInputLineLoginJson(input: String): Unit = {
+    if (debug) println("processing Json input ...")
+
+    val myJson: JsValue = Json.parse(input)
+
+    insertUser((myJson \\ "Username").head.as[String],
+      (myJson \\ "Firstname").head.as[String],
+      (myJson \\ "Surname").head.as[String],
+      (myJson \\ "Birthplace").head.as[String],
+      (myJson \\ "Birthdate").head.as[String],
+      (myJson \\ "Email").head.as[String],
+      (myJson \\ "Password").head.as[String])
+  }
+
+  def processInputLineErgJson(input: String): Unit = {
+    if (debug) println("processing Erg Json input ...")
+
+    val myJson: JsValue = Json.parse(input)
+
+    insertErg((myJson \\ "Username").head.as[String],
+      (myJson \\ "VersuchNr").head.as[Int],
+      (myJson \\ "KursName").head.as[String],
+      (myJson \\ "AufgabeNr").head.as[Int],
+      (myJson \\ "Erg").head.as[Int])
   }
 }
