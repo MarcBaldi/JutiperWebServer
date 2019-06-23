@@ -35,12 +35,10 @@ class HttpServer() {
           {
             val myJson: Option[User] = getUserByUsername(command)
             myJson match {
-              case Some(user) => {
+              case Some(user) =>
                 complete(HttpEntity(ContentTypes.`application/json`, userToJson(user).toString()))
-              }
-              case None => {
+              case None =>
                 complete(HttpEntity(ContentTypes.`application/json`, errorToJson("Username does not exist").toString()))
-              }
             }
           }
         } ~
@@ -137,9 +135,12 @@ class HttpServer() {
   def insertErg(UserName: String, VersuchNr: Int, KursName: String, AufgabeNr: Int, Erg: Int): Unit = {
     val statement = connection.createStatement()
     statement.executeUpdate("UPDATE " + KursName +
-      " SET q" + AufgabeNr +" = " + Erg +
-      "WHERE userFK = " + UserName + " AND versuchNr = " + VersuchNr + ";")
+      " SET q" + AufgabeNr +" = '" + Erg +
+      "' WHERE userFK = '" + UserName + "' AND versuchNr = '" + VersuchNr + "';")
     if (debug) println("DB-request. successfully UPDATED")
+    if (debug) println("DEBUG: "+ "UPDATE " + KursName +
+      " SET q" + AufgabeNr +" = '" + Erg +
+      "' WHERE userFK = '" + UserName + "' AND versuchNr = '" + VersuchNr + "';")
   }
 
   def insertVersuchNr(UserName: String){
@@ -194,6 +195,7 @@ class HttpServer() {
     }
   }
 
+  //login
   def login(input: String): JsObject = {
 
 
@@ -229,6 +231,7 @@ class HttpServer() {
     }
   }
 
+  //maybe delete this
   def processInputLine(input: String): Unit = {
     if (debug) println("processing input ...")
     /*
@@ -245,6 +248,7 @@ class HttpServer() {
 
   }
 
+  //register
   def processInputLineJson(input: String): Unit = {
     if (debug) println("processing Json input ...")
 
@@ -261,7 +265,8 @@ class HttpServer() {
     // insert first versuchNr on each course
     insertVersuchNr((myJson \\ "Username").head.as[String])
   }
-
+/*
+  //login
   def processInputLineLoginJson(input: String): Unit = {
     if (debug) println("processing Json input ...")
 
@@ -274,8 +279,9 @@ class HttpServer() {
       (myJson \\ "Birthdate").head.as[String],
       (myJson \\ "Email").head.as[String],
       (myJson \\ "Password").head.as[String])
-  }
+  }*/
 
+  //update question
   def processInputLineErgJson(input: String): Unit = {
     if (debug) println("processing Erg Json input ...")
 
