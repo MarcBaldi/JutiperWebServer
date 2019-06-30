@@ -16,7 +16,7 @@ object JutiperServerApp {
 
   def main(args: Array[String]): Unit = {
 
-    val user = User("Shohrukh", "Shohrukh", "Koyirov", "Uzbekistan", "05.01.1992", "shkoyiro@htwg-konstanz.de", "jutiper2019")
+    //val user = User("Shohrukh", "Shohrukh", "Koyirov", "Uzbekistan", "05.01.1992", "shkoyiro@htwg-konstanz.de", "jutiper2019")
 
     val con = new Controller()
     //con.createCertificate(user)

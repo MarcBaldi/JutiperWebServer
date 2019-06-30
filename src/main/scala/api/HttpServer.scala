@@ -52,6 +52,7 @@ class HttpServer(con: Controller) {
         }
         } ~
         // simple insertion of a user to database - maybe delete this!
+      // TODO : DEPRECATED
         path("putUser" / Segment) { command => {processInputLine(command)}
           complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "<h1>Transmitted Successfully</h1>"))
         } ~
@@ -383,6 +384,7 @@ class HttpServer(con: Controller) {
     }
   }
 
+  //converts a percentage to a school-like grade
   private def convertGrade(myTotal: Double): Double ={
 
     val note = myTotal match {
@@ -405,6 +407,7 @@ class HttpServer(con: Controller) {
 
 
   //maybe delete this
+  //TODO: DEPRECATED
   def processInputLine(input: String): Unit = {
     if (debug) println("processing input ...")
     /*
