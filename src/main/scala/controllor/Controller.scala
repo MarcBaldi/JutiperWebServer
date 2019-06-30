@@ -7,16 +7,13 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 
 import model.Mail.{Mail, send}
-import model.User
+import model.{CertificateGrades, User}
 
 class Controller() {
 
+  def createCertificate(user: User, certGrades : CertificateGrades): Unit = {
 
-
-
-  //TODO hier kommt noch als zweite Parametr die Noten
-  def createCertificate(user: User): Unit = {
-
+    //function of spdf to prepare transforming of html to a pdf file.
     var pdf = Pdf(new PdfConfig {
       orientation := Portrait
       pageSize := "Letter"
@@ -27,8 +24,8 @@ class Controller() {
     })
 
     val jutiperZertifikat = new File("certificates",  "JutiperZertifikat.pdf")
-    val note = 1
-    val gesamt = 2
+    //val note = 1
+    val gesamt = certGrades.totalTotal
     val format = new SimpleDateFormat("dd.MM.yyyy")
     val currentDate = format.format(Calendar.getInstance().getTime)
 
@@ -53,25 +50,25 @@ class Controller() {
       "<h2><b><center>Mit folgenden Ergebnissen abgelegt</center></b></h2>" +
       "<table >" +
       "<tr>" +
-      "<td><b>Geschichte</b></td> <td>" + note + "</td>" +
+      "<td><b>Geschichte</b></td> <td>" + certGrades.grades("01_geschichte") + "</td>" +
       "</tr><tr>" +
-      "<td><b>Belichtungszeit</b></td> <td>" + note + "</td>" +
+      "<td><b>Belichtungszeit</b></td> <td>" + certGrades.grades("02_belichtung") + "</td>" +
       "</tr><tr>" +
-      "<td><b>Blende</b></td> <td>" + note + "</td>" +
+      "<td><b>Blende</b></td> <td>" + certGrades.grades("03_blende") + "</td>" +
       "</tr><tr>" +
-      "<td><b>ISO</b></td> <td>" + note + "</td>" +
+      "<td><b>ISO</b></td> <td>" + certGrades.grades("04_iso") + "</td>" +
       "</tr><tr>" +
-      "<td><b>Studiolicht</b></td> <td>" + note + "</td>" +
+      "<td><b>Studiolicht</b></td> <td>" + certGrades.grades("05_studiolicht") + "</td>" +
       "</tr><tr>" +
-      "<td><b>Blitz</b></td> <td>" + note + "</td>" +
+      "<td><b>Blitz</b></td> <td>" + certGrades.grades("06_blitz") + "</td>" +
       "</tr><tr>" +
-      "<td><b>Komposition&Farbkontraste</b></td> <td>" + note + "</td>" +
+      "<td><b>Komposition&Farbkontraste</b></td> <td>" + certGrades.grades("07_komposition") + "</td>" +
       "</tr><tr>" +
-      "<td><b>Objektive</b></td> <td>" + note + "</td>" +
+      "<td><b>Objektive</b></td> <td>" + certGrades.grades("08_objektive") + "</td>" +
       "</tr><tr>" +
-      "<td><b>Perspektive</b></td> <td>" + note + "</td>" +
+      "<td><b>Perspektive</b></td> <td>" + certGrades.grades("09_perspektive") + "</td>" +
       "</tr><tr>" +
-      "<td><b>Portrait</b></td> <td>" + note + "</td>" +
+      "<td><b>Portrait</b></td> <td>" + certGrades.grades("10_portrait") + "</td>" +
       "</tr>" +
       "</table>" +
       "<h2>Gesamt " + "  " + gesamt + "</h2>" +
@@ -89,22 +86,20 @@ class Controller() {
     // TODO: jpg sollte noch gemacht werden
 
     pdf.run(page, jutiperZertifikat)
+    sendCertificate(user, jutiperZertifikat)
   }
 
-  //TODO hier kommen noch mehr Parameter
-  def sendCertificate() = {
-    //println("DEBUG: sending to: " + user.Email)
-    val certificate = new File("certificates", "JutiperZertifikat.pdf")
+  def sendCertificate(user: User, jutiperZertifikat: File):Unit = {
+    println("DEBUG: sending to: " + user.Email)
+    //val jutiperZertifikat = new File("certificates", "JutiperZertifikat.pdf")
 
-
-    // TODO: richtiger user adresse
-    send a new Mail (
+    send a Mail (
       from = ("JutiperDev@gmail.com", "Jutiper Dev"),
-      to = Seq("herr_shoh@mail.ru"),
-      bcc = Seq("mabaldis@htwg-konstanz.de"),
+      to = Seq(user.Email),
+      bcc = Seq("herr_shoh@mail.ru"),
       subject = "Jutiper Zertifikat",
       message = "Gratulation :)" ,
-      attachment = Some(certificate)
+      attachment = Some(jutiperZertifikat)
     )
   }
 }

@@ -19,12 +19,12 @@ object JutiperServerApp {
     val user = User("Shohrukh", "Shohrukh", "Koyirov", "Uzbekistan", "05.01.1992", "shkoyiro@htwg-konstanz.de", "jutiper2019")
 
     val con = new Controller()
-    con.createCertificate(user)
+    //con.createCertificate(user)
     //con.sendCertificate()
 
 
 
-    val webserver = new HttpServer()
+    val webserver = new HttpServer(con)
     webserver.connectDatabase()
     println(s"Server online at http://localhost:8080/\nPress RETURN to stop...")
     StdIn.readLine() // let it run until user presses return
