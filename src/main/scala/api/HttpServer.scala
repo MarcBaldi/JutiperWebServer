@@ -52,11 +52,6 @@ class HttpServer(con: Controller, certCon: CertificateController) {
           complete(HttpEntity(ContentTypes.`application/json`, login(command).toString()))
         }
         } ~
-        // simple insertion of a user to database - maybe delete this!
-      // TODO : DEPRECATED
-        path("putUser" / Segment) { command => {processInputLine(command)}
-          complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "<h1>Transmitted Successfully</h1>"))
-        } ~
         // simple insertion of a user to database aka a simple REGISTER
         path("putUserJson" / Segment) { command => {
           processInputLineJson(command)
@@ -247,7 +242,7 @@ class HttpServer(con: Controller, certCon: CertificateController) {
 
       var allCourses = new ListBuffer[CourseGrade]
 
-      for (courseNr <- 0 to courseNames.length-1) {
+      for (courseNr <- courseNames.indices) {
 
         resultSet = statement.executeQuery("SELECT * FROM jutiper." + courseNames(courseNr) + " WHERE userFK = '" + username + "' AND versuchnr = '" + vers_nr + "';")
         resultSet.first()

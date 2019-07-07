@@ -80,10 +80,10 @@ class CertificateController {
       "<h3>TeilnehmerNr. 175786 </h3>" +
       "<h3>Digital Signatur</h3>" +
       "<h3>Konstanz, " + currentDate + "</h3>" +
-      "<img src=\"file://C:/Users/Marcimio/IdeaProjects/JutiperServer/assets/Juti.png\" style=\"width:177px;height:106px;\">" +
       "</body></html>"
 
-    // TODO: jpg sollte noch gemacht werden
+    // wishlist: jpg support could be appreciated
+    // "<img src=\"file://C:/Users/Marcimio/IdeaProjects/JutiperServer/assets/Juti.png\" style=\"width:177px;height:106px;\">" +
 
     pdf.run(page, jutiperCertificate)
     sendCertificate(user, jutiperCertificate)

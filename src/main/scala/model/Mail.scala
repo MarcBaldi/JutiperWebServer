@@ -44,15 +44,12 @@ object Mail {
         }
       }
 
-      // TODO Set authentication from your configuration, sys properties or w/e
-
       // Can't add these via fluent API because it produces exceptions
-      mail.to foreach (commonsMail.addTo(_))
-      mail.cc foreach (commonsMail.addCc(_))
-      mail.bcc foreach (commonsMail.addBcc(_))
+      mail.to foreach commonsMail.addTo _
+      mail.cc foreach commonsMail.addCc _
+      mail.bcc foreach commonsMail.addBcc _
 
-
-      //TODO: Set up our email server hostname
+      // TODO Set authentication from your configuration, sys properties or w/e
       // gmail config
       commonsMail.setHostName("smtp.googlemail.com")
       commonsMail.setAuthentication("jutiperdev@gmail.com","jutiperss19") //password
