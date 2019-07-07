@@ -10,13 +10,14 @@ import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
-import controllor.Controller
+import controller.Controller
+import controller.CertificateController
 import play.api.libs.json._
 import model.{CertificateGrades, CourseGrade, User}
 
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.collection.mutable.ListBuffer
-class HttpServer(con: Controller) {
+class HttpServer(con: Controller, certCon: CertificateController) {
 
   val debug = true
 
@@ -39,9 +40,9 @@ class HttpServer(con: Controller) {
             val myJson: Option[User] = getUserByUsername(command)
             myJson match {
               case Some(user) =>
-                complete(HttpEntity(ContentTypes.`application/json`, userToJson(user).toString()))
+                complete(HttpEntity(ContentTypes.`application/json`, con.userToJson(user).toString()))
               case None =>
-                complete(HttpEntity(ContentTypes.`application/json`, errorToJson("Username does not exist").toString()))
+                complete(HttpEntity(ContentTypes.`application/json`, con.errorToJson("Username does not exist").toString()))
             }
           }
         } ~
@@ -74,32 +75,6 @@ class HttpServer(con: Controller) {
         }
         }
     }
-
-  def userToJson(user: User): JsObject = {
-    val myJson = Json.obj(
-      "status" -> "success",
-      "Username" -> user.Username,
-      "Firstname" -> user.Firstname,
-      "Surname" -> user.Surname,
-      "Birthplace" -> user.Birthplace,
-      "Birthdate" -> user.Birthdate,
-      "Email" -> user.Email,
-      "Passwort" -> user.Password
-    )
-
-    if (debug) {println("converted to json: "+ myJson)}
-    myJson
-  }
-
-  def errorToJson(message: String): JsObject = {
-    val myJson = Json.obj(
-      "status" -> "error",
-      "message" -> message
-    )
-
-    if (debug) {println("converted to json: "+ myJson)}
-    myJson
-  }
 
   val bindingFuture: Future[Http.ServerBinding] = Http().bindAndHandle(route, "localhost", 8080)
 
@@ -152,30 +127,30 @@ class HttpServer(con: Controller) {
       "' WHERE userFK = '" + UserName + "' AND versuchNr = '" + VersuchNr + "';")
   }
 
-  // TODO;
-  def insertVersuchNr(UserName: String){
+  // insert new lines in each table
+  def insertVersuchNr(UserName: String, versuchNr: Int){
 
     val statement = connection.createStatement()
     statement.executeUpdate("INSERT INTO 01_geschichte (userFK, versuchNr) " +
-      "VALUES " + "('" + UserName + "', 1);")
+      "VALUES " + "('" + UserName + "', " + versuchNr+ ");")
     statement.executeUpdate("INSERT INTO 02_belichtung (userFK, versuchNr) " +
-      "VALUES " + "('" + UserName + "', 1);")
+      "VALUES " + "('" + UserName + "', " + versuchNr+ ");")
     statement.executeUpdate("INSERT INTO 03_blende (userFK, versuchNr) " +
-      "VALUES " + "('" + UserName + "', 1);")
+      "VALUES " + "('" + UserName + "', " + versuchNr+ ");")
     statement.executeUpdate("INSERT INTO 04_iso (userFK, versuchNr) " +
-      "VALUES " + "('" + UserName + "', 1);")
+      "VALUES " + "('" + UserName + "', " + versuchNr+ ");")
     statement.executeUpdate("INSERT INTO 05_studiolicht (userFK, versuchNr) " +
-      "VALUES " + "('" + UserName + "', 1);")
+      "VALUES " + "('" + UserName + "', " + versuchNr+ ");")
     statement.executeUpdate("INSERT INTO 06_blitz (userFK, versuchNr) " +
-      "VALUES " + "('" + UserName + "', 1);")
+      "VALUES " + "('" + UserName + "', " + versuchNr+ ");")
     statement.executeUpdate("INSERT INTO 07_komposition (userFK, versuchNr) " +
-      "VALUES " + "('" + UserName + "', 1);")
+      "VALUES " + "('" + UserName + "', " + versuchNr+ ");")
     statement.executeUpdate("INSERT INTO 08_objektive (userFK, versuchNr) " +
-      "VALUES " + "('" + UserName + "', 1);")
+      "VALUES " + "('" + UserName + "', " + versuchNr+ ");")
     statement.executeUpdate("INSERT INTO 09_perspektive (userFK, versuchNr) " +
-      "VALUES " + "('" + UserName + "', 1);")
+      "VALUES " + "('" + UserName + "', " + versuchNr+ ");")
     statement.executeUpdate("INSERT INTO 10_portrait (userFK, versuchNr) " +
-      "VALUES " + "('" + UserName + "', 1);")
+      "VALUES " + "('" + UserName + "', " + versuchNr+ ");")
     if (debug) println("DB-request. successfully MASS INSERTED")
 
   }
@@ -324,19 +299,19 @@ class HttpServer(con: Controller) {
             //TODO: return all missing answers.
             if (debug) {println("DEBUG returned early due to course: "+ myCourse.CourseName + " and questionNr :"+ x)}
             return Json.obj(
-              "status" -> "false", "message" -> "Some questions are missing!", "course" -> myCourse.CourseName, "question" -> x
+              "status" -> "false", "message" -> ("Some questions are missing! Course " + myCourse.CourseName +", Question " + x)
             )
           }
         }
 
         val myTotal = myCourse.calcTotal
-        certificateMap += (myCourse.CourseName -> convertGrade(myTotal))
+        certificateMap += (myCourse.CourseName -> con.convertGrade(myTotal))
 
-        if (debug) println("DEBUG: "+myCourse.CourseName +" : "+convertGrade(myTotal))
+        if (debug) println("DEBUG: "+myCourse.CourseName +" : "+con.convertGrade(myTotal))
         myTotalTotal += myTotal
       }
       myTotalTotal = myTotalTotal / allCourses.size
-      if (debug) println("DEBUG: total: "+ convertGrade(myTotalTotal))
+      if (debug) println("DEBUG: total: "+ con.convertGrade(myTotalTotal))
 
 
       // update result tabelle
@@ -351,15 +326,15 @@ class HttpServer(con: Controller) {
       val currentDate = format.format(Calendar.getInstance().getTime)
 
       statement.executeUpdate("INSERT INTO `jutiper`.`result` (`certNr`,`userFK`,`date`,`score`) " +
-        "VALUES ("+ newCertNr +",'"+username+"','"+currentDate+"',"+convertGrade(myTotalTotal)+");")
+        "VALUES ("+ newCertNr +",'"+username+"','"+currentDate+"',"+con.convertGrade(myTotalTotal)+");")
 
 
 
       // ---- certificate stuff -----
-      val certificateGra = CertificateGrades(convertGrade(myTotalTotal), certificateMap)
+      val certificateGra = CertificateGrades(con.convertGrade(myTotalTotal), certificateMap)
 
       getUserByUsername(username) match {
-        case Some(user) => con.createCertificate(user, certificateGra)
+        case Some(user) => certCon.createCertificate(user, certificateGra)
         case None =>{
           // certificate needs a valid user. if there is no user, return with the error
           if (debug) {println("DEBUG returned early due to user: "+ username + " not found")}
@@ -369,7 +344,10 @@ class HttpServer(con: Controller) {
         }
       }
 
-
+      // insert versuchmr
+      if (username != "Guest") {
+        insertVersuchNr(username, vers_nr.toInt + 1)
+      }
 
       if (debug) {println("DEBUG: successful message sent")}
       Json.obj(
@@ -382,27 +360,6 @@ class HttpServer(con: Controller) {
         "status" -> "false", "message" -> "sorry, SQL error. Check back with the devs."
       )
     }
-  }
-
-  //converts a percentage to a school-like grade
-  private def convertGrade(myTotal: Double): Double ={
-
-    val note = myTotal match {
-      case i if i <= 100 && i > 94.4 => 1.0
-      case i if i <= 94.4 && i > 88.8 => 1.3
-      case i if i <= 88.8 && i > 83.2 => 1.7
-      case i if i <= 83.2 && i > 77.6 => 2.0
-      case i if i <= 77.6 && i > 72.0 => 2.3
-      case i if i <= 72.0 && i > 66.4 => 2.7
-      case i if i <= 66.4 && i > 60.8 => 3.0
-      case i if i <= 60.8 && i > 55.2 => 3.3
-      case i if i <= 55.2 && i > 49.6 => 3.7
-      case i if i <= 49.6 && i > 44.0 => 4.0
-      case _ => 5.0
-    }
-
-    //println("calculatin.. total: " + myTotal+ " note: "+ note)
-    note
   }
 
 
@@ -439,7 +396,7 @@ class HttpServer(con: Controller) {
       (myJson \\ "Password").head.as[String])
 
     // insert first versuchNr on each course
-    insertVersuchNr((myJson \\ "Username").head.as[String])
+    insertVersuchNr((myJson \\ "Username").head.as[String], 1)
   }
 
 

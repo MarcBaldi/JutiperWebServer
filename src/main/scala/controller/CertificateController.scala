@@ -1,20 +1,20 @@
-package controllor
+package controller
 
 import java.io.File
-
-import io.github.cloudify.scala.spdf._
 import java.text.SimpleDateFormat
 import java.util.Calendar
-
 import model.Mail.{Mail, send}
 import model.{CertificateGrades, User}
+import io.github.cloudify.scala.spdf._
 
-class Controller() {
+class CertificateController {
+
+  val debug = true
 
   def createCertificate(user: User, certGrades : CertificateGrades): Unit = {
 
     //function of spdf to prepare transforming of html to a pdf file.
-    var pdf = Pdf(new PdfConfig {
+    val pdf = Pdf(new PdfConfig {
       orientation := Portrait
       pageSize := "Letter"
       marginTop := "1in"
@@ -23,9 +23,9 @@ class Controller() {
       marginRight := "1in"
     })
 
-    val jutiperZertifikat = new File("certificates",  "JutiperZertifikat.pdf")
+    val jutiperCertificate = new File("certificates",  "JutiperZertifikat.pdf")
     //val note = 1
-    val gesamt = certGrades.totalTotal
+    val total = certGrades.totalTotal
     val format = new SimpleDateFormat("dd.MM.yyyy")
     val currentDate = format.format(Calendar.getInstance().getTime)
 
@@ -71,7 +71,7 @@ class Controller() {
       "<td><b>Portrait</b></td> <td>" + certGrades.grades("10_portrait") + "</td>" +
       "</tr>" +
       "</table>" +
-      "<h2>Gesamt " + "  " + gesamt + "</h2>" +
+      "<h2>Gesamt " + "  " + total + "</h2>" +
       "<br/>" +
       "<br/>" +
       "<br/>" +
@@ -85,13 +85,12 @@ class Controller() {
 
     // TODO: jpg sollte noch gemacht werden
 
-    pdf.run(page, jutiperZertifikat)
-    sendCertificate(user, jutiperZertifikat)
+    pdf.run(page, jutiperCertificate)
+    sendCertificate(user, jutiperCertificate)
   }
 
-  def sendCertificate(user: User, jutiperZertifikat: File):Unit = {
-    println("DEBUG: sending to: " + user.Email)
-    //val jutiperZertifikat = new File("certificates", "JutiperZertifikat.pdf")
+  def sendCertificate(user: User, jutiperCertificate: File):Unit = {
+    if (debug) println("DEBUG: sending to: " + user.Email)
 
     send a Mail (
       from = ("JutiperDev@gmail.com", "Jutiper Dev"),
@@ -99,7 +98,7 @@ class Controller() {
       bcc = Seq("herr_shoh@mail.ru"),
       subject = "Jutiper Zertifikat",
       message = "Gratulation :)" ,
-      attachment = Some(jutiperZertifikat)
+      attachment = Some(jutiperCertificate)
     )
   }
 }
