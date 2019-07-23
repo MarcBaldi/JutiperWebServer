@@ -71,7 +71,7 @@ class HttpServer(con: Controller, certCon: CertificateController) {
         }
     }
 
-  val bindingFuture: Future[Http.ServerBinding] = Http().bindAndHandle(route, "localhost", 8080)
+  val bindingFuture: Future[Http.ServerBinding] = Http().bindAndHandle(route, "0.0.0.0", 8080)
 
   def unbind(): Unit = {
     bindingFuture
@@ -80,11 +80,16 @@ class HttpServer(con: Controller, certCon: CertificateController) {
   }
 
   def connectDatabase(): Unit = {
+
+    var db = "juti"
+
     // connect to the database named "mysql" on the localhost
     val driver = "com.mysql.cj.jdbc.Driver"
-    val url = "jdbc:mysql://localhost/jutiper"
-    val username = "jutiper"
-    val password = "jutiper"
+    val url = "jdbc:mysql://" + db + "/jutiper"
+    val username = "root"
+    val password = "jutiper2019"
+
+    if (debug) {println("DB-Access: url: "+ url)}
 
     try {
       // make the connection
@@ -99,7 +104,13 @@ class HttpServer(con: Controller, certCon: CertificateController) {
   }
 
   def closeDatabase(): Unit = {
-    connection.close()
+    try {
+      // close the connection
+      if (debug) {println("Trying to close the connection to the db")}
+      connection.close()
+    } catch {
+      case e: Throwable => e.printStackTrace()
+    }
   }
 
   def insertUser(Username: String, Firstname: String, Surname: String, Birthplace: String, Birthdate: String, Email: String, Password: String): Unit = {
