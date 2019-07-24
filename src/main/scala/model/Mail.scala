@@ -49,7 +49,6 @@ object Mail {
       mail.cc foreach commonsMail.addCc _
       mail.bcc foreach commonsMail.addBcc _
 
-      // TODO Set authentication from your configuration, sys properties or w/e
       // gmail config
       commonsMail.setHostName("smtp.googlemail.com")
       commonsMail.setAuthentication("jutiperdev@gmail.com","jutiperss19") //password

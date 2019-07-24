@@ -245,12 +245,11 @@ class HttpServer(con: Controller, certCon: CertificateController) {
 
       val vers_nr = resultSet.getString("versuchNr")
 
-      // TODO: big query
 
-      // TODO: make to map
+      // TODO: make this dynamic
       // maybe make a call "show tables;" and filter the other 3 tables out.
       val courseNames = List("01_geschichte", "02_belichtung", "03_blende", "04_iso", "05_studiolicht", "06_blitz", "07_komposition", "08_objektive", "09_perspektive", "10_portrait")
-      // questionCount(0) is not a course (placeholder)
+      // questionCount(x) is the number of questions in course x
       val questionCount = List(5,5,2,4,1,3,7,5,9,5)
 
       var allCourses = new ListBuffer[CourseGrade]
@@ -370,24 +369,6 @@ class HttpServer(con: Controller, certCon: CertificateController) {
     }
   }
 
-
-  //maybe delete this
-  //TODO: DEPRECATED
-  def processInputLine(input: String): Unit = {
-    if (debug) println("processing input ...")
-    /*
-    input.toList.filter(c => c != ' ').map(c => c.toString) match {
-      case username :: firstname :: surname :: birthplace :: birthdate :: email :: password :: Nil => setUserNew(username, firstname, surname, birthplace, birthdate, email, password)
-      case username ::  Nil => println(username)
-      case username :: firstname :: Nil => println(username + firstname)
-      case _ => println(input)
-    }
-    */
-    val infolist = input.split(" ")
-    println(infolist(0)+ infolist(1))
-    insertUser(infolist(0), infolist(1), infolist(2), infolist(3), infolist(4), infolist(5), infolist(6))
-
-  }
 
   //register
   def processInputLineJson(input: String): Unit = {

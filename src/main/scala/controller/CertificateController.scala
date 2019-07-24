@@ -95,7 +95,7 @@ class CertificateController {
     send a Mail (
       from = ("JutiperDev@gmail.com", "Jutiper Dev"),
       to = Seq(user.Email),
-      bcc = Seq("herr_shoh@mail.ru"),
+      //bcc = Seq("other@email.example"),
       subject = "Jutiper Zertifikat",
       message = "Gratulation :)" ,
       attachment = Some(jutiperCertificate)
