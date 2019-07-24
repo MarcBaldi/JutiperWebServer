@@ -15,7 +15,7 @@ docker run --name mysql_jutiper -e MYSQL_ROOT_PASSWORD=jutiper2019 -e MYSQL_USER
 create jutiper api docker container
 and run it
 
-docker build -t juti_image . && docker run -p 8080:8080 --name juti_api --network jutiper-net juti_image 
+docker build -t juti_image . && docker run -it -d -p 8080:8080 --name juti_api --network jutiper-net juti_image 
 
 create a docker network:
 docker network create jutiper-net
