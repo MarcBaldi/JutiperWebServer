@@ -28,5 +28,7 @@ docker network connect jutiper-net juti_api
 uploading files to the VM
 scp Dockerfile root@141.37.160.183:~
 
+
 executing stuff in a docker container
 docker exec -it juti /bin/bash  
+
