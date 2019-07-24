@@ -1,6 +1,6 @@
-#TODO:
+# TODO:
 
-##API:
+## API:
 
 change email addresses of guest user to the most recent developers:
 
@@ -41,7 +41,7 @@ Mail.scala-> send -> gMail config
 HttpServer-> connectDatabase -> DB root password
 
 
-##UNITY:
+## UNITY:
 
 feedback to user if server is not reachable
 
@@ -49,7 +49,7 @@ LessonController -> Init():
 Investigate what is causing the lag and try to fix it.
 
 
-###Lessons/Exams:
+### Lessons/Exams:
 
 course 05 and 09: no exam
 
@@ -58,12 +58,12 @@ make all exams inherit from lesson controller and use its functions.(done for 8 
 discuss with the designers how a fair marking system could be implemented
 
 
-##DOCKER:
+## DOCKER:
 make the DB not loose updates if container is restarted
 
 
 
-##helpful links:
+## helpful links:
 
 stop local mysql instance: 
 https://stackoverflow.com/questions/10885038/stop-mysql-service-windows
@@ -89,7 +89,3 @@ http://141.37.160.183:8080/
 
 Used software to make the certificate pdf:
 https://wkhtmltopdf.org/index.html
-
-
-
-

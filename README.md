@@ -1,4 +1,4 @@
-#Jutiper API
+# Jutiper API
 A server designed to be a persistent backend for Jutiper.
 
 ## Prerequisites
@@ -47,7 +47,7 @@ docker network create jutiper-net
 
 create mysql docker container and run it
 
-docker run --name mysql_jutiper -e MYSQL_ROOT_PASSWORD=jutiper2019 -e MYSQL_USER=workbench -e MYSQL_PASSWORD=workbench -v /data/mysql:/var/lib/mysql -v /data/log:/var/log/mysql -p 3306:3306 --network jutiper-net -d mysql
+docker run --name mysql_jutiper -e MYSQL_ROOT_PASSWORD=*insert_root_pw* -e MYSQL_USER=workbench -e MYSQL_PASSWORD=*insert_user_pw* -v /data/mysql:/var/lib/mysql -v /data/log:/var/log/mysql -p 3306:3306 --network jutiper-net -d mysql
 
 create jutiper api docker container and run it
 
@@ -67,8 +67,3 @@ Accessible within the HTWG VPN, by browser or the unity App.
 ### db
 Running in Docker containers on the VM on the HTWG server.
 Accessible remotely within the HTWG VPN, with the mySQL workbench. 
-
-
-
-
-
