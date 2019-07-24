@@ -81,11 +81,13 @@ class HttpServer(con: Controller, certCon: CertificateController) {
 
   def connectDatabase(): Unit = {
 
-    var db = "juti"
+    // this is the image name of the docker container!
+    var db = "mysql_jutiper"
 
     // connect to the database named "mysql" on the localhost
     val driver = "com.mysql.cj.jdbc.Driver"
     val url = "jdbc:mysql://" + db + "/jutiper"
+    // maybe have a mechanism to not upload this information to github.
     val username = "root"
     val password = "jutiper2019"
 

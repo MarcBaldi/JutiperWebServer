@@ -1,5 +1,9 @@
 Jutiper readme file
 
+IF you have a local instance of mysql running (e.g. MySQL80), 
+as admin:
+net stop MySQL80
+
 # docker
 steps done to achieve our docker set up
 
