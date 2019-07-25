@@ -89,3 +89,6 @@ http://141.37.160.183:8080/
 
 Used software to make the certificate pdf:
 https://wkhtmltopdf.org/index.html
+
+Other links for testing:
+http://141.37.160.183:8080/sendCertificate/%7B%22status%22:%22success%22,%22Username%22:%22Guest%22%7D
