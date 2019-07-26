@@ -92,3 +92,19 @@ https://wkhtmltopdf.org/index.html
 
 Other links for testing:
 http://141.37.160.183:8080/sendCertificate/%7B%22status%22:%22success%22,%22Username%22:%22Guest%22%7D
+
+## restart
+
+to restart the server, do the following:
+
+login to the cmd as root ( e.g. via Putty),
+run the DB with this command:
+
+docker run --name mysql_jutiper -e MYSQL_ROOT_PASSWORD=jutiper2019 -e MYSQL_USER=workbench -e MYSQL_PASSWORD=workbench -v /data/mysql:/var/lib/mysql -v /data/log:/var/log/mysql -p 3306:3306 --network jutiper-net -d mysql
+
+cd JutiperWebServer,
+run the api with this command:
+
+docker build -t juti_image . && docker run -it -d -p 8080:8080 --name juti_api --network jutiper-net juti_image
+
+wait (this could take 5-10min)
